@@ -7,6 +7,7 @@ import Contact from "./components/Contact/Contact"
 import Contacto from "./pages/Contacto/Contacto"
 import EstilosPage from "./pages/Estilos/Estilos"
 import Curiosidades from "./pages/Curiosidades/Curiosidades"
+import Login from "./pages/Login/Login"
 
 const Home = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="estilos" element={<EstilosPage />} />
           <Route path="curiosidades" element={<Curiosidades />} />
           <Route path="contacto" element={<Contacto />} />
+          <Route path="login" element={<Login />} />
         </Route>
       </Routes>
     </BrowserRouter>

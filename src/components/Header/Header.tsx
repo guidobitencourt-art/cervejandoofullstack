@@ -4,10 +4,18 @@ import Logo from '../../assets/Logo.png'
 
 const Header = () => {
   const [open, setOpen] = useState(false)
+  const [token, setToken] = useState<string | null>(typeof window !== 'undefined' ? localStorage.getItem('token') : null)
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    setToken(null)
+    // refresh to update protected UI quickly
+    window.location.reload()
+  }
 
   return (
-    <header className="bg-[#FFF5D4] flex justify-between items-center h-14 md:h-16 px-6 relative">
-      <img src={Logo} alt="Cervejando logo" className="max-w-[9rem] md:max-w-[12.5rem] h-auto" />
+    <header className="bg-[#FFF5D4] flex justify-between items-center py-4 px-6 relative">
+      <img src={Logo} alt="Cervejando logo" className="max-w-[9rem] md:max-w-[12.5rem] h-auto object-contain" />
 
       <button
         className="flex md:hidden flex-col gap-[4px] md:gap-[6px] bg-transparent border-0 p-0 cursor-pointer z-10"
@@ -21,13 +29,20 @@ const Header = () => {
       </button>
 
       <nav
-        className={`${open ? 'flex' : 'hidden'} md:flex ${open ? 'absolute top-full left-0 w-full bg-[#FFF5D4] flex-col items-center py-3 shadow-md' : ''} md:static md:top-auto md:left-auto md:w-auto md:bg-transparent md:flex-row md:items-center md:py-0 md:shadow-none`}
+        className={`${open ? 'flex' : 'hidden'} md:flex ${open ? 'absolute top-full left-0 w-full bg-[#FFF5D4] flex-col items-center py-4 shadow-md' : ''} md:static md:top-auto md:left-auto md:w-auto md:bg-transparent md:flex-row md:items-center md:py-0 md:shadow-none`}
       >
         <ul className={`flex ${open ? 'flex-col gap-4' : 'flex-row gap-4'} md:flex-row md:gap-8 text-sm md:text-base`}>
           <li><Link className="font-bold hover:text-[#d4a017]" to="/">Inicio</Link></li>
           <li><Link className="font-bold hover:text-[#d4a017]" to="/estilos">Estilos</Link></li>
           <li><Link className="font-bold hover:text-[#d4a017]" to="/curiosidades">Curiosidades</Link></li>
           <li><Link className="font-bold hover:text-[#d4a017]" to="/contacto">Contacto</Link></li>
+            {!token ? (
+              <li><Link className="font-bold hover:text-[#d4a017]" to="/login">Login</Link></li>
+            ) : (
+              <li>
+                <button onClick={handleLogout} className="font-bold hover:text-[#d4a017] bg-transparent border-0 p-0">Cerrar sesión</button>
+              </li>
+            )}
         </ul>
       </nav>
     </header>

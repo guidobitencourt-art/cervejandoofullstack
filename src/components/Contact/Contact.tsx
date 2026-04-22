@@ -2,7 +2,7 @@
 
 const Contact = () => {
   return (
-    <section className="w-full py-12">
+    <section className="w-full pt-12 pb-16">
       <div className="max-w-6xl mx-auto px-6 grid gap-8 md:grid-cols-2 items-start md:items-stretch">
 
         <div className="w-full order-1">
