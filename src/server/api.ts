@@ -95,21 +95,13 @@ app.get('/api/debug-db', async (req: Request, res: Response) => {
   }
 });
 
-// 404 handler (must be after routes)
-app.use((req: Request, res: Response) => {
-  res.status(404).json({ error: 'Not found' })
-})
-
-// Error handler
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  // eslint-disable-next-line no-console
-  console.error('Unhandled error:', err)
-  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' })
-})
 
 // Ruta GET: Sirve para LEER todas las cervezas
 app.get("/api/cervezas", async (req: Request, res: Response) => {
   try {
+    // Diagnostic logs to help debug 500 errors from the frontend
+    // eslint-disable-next-line no-console
+    console.log('GET /api/cervezas - isDevNoDB=', isDevNoDB, 'MONGODB_URI?', !!mongoUriValidated, 'mongooseReadyState=', mongoose.connection.readyState)
     if (isDevNoDB) {
       // Datos de ejemplo para desarrollo local cuando no hay DB
       const ejemplo = [
@@ -229,6 +221,18 @@ app.delete("/api/cervezas/:id", authMiddleware, async (req: Request, res: Respon
     });
   }
 });
+
+// 404 handler (must be after routes)
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' })
+})
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error:', err)
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' })
+})
 
 // 6. Exportamos la app para que Vercel pueda encenderla
 export default app;
