@@ -32,7 +32,6 @@ export async function registerController(req: Request, res: Response) {
 export async function loginController(req: Request, res: Response) {
   try {
     const { identifier, password } = req.body
-    // Log attempt (safe: don't log password)
     console.log(`[Auth] login attempt - identifier=${identifier} ip=${req.ip} devNoDB=${!process.env.MONGODB_URI}`)
 
     if (!identifier || !password) {
@@ -40,7 +39,6 @@ export async function loginController(req: Request, res: Response) {
       return res.status(400).json({ error: 'Faltan campos' })
     }
 
-    // Dev fallback when no DB
     if (!process.env.MONGODB_URI) {
       if (identifier === 'dev' && password === 'devpass') {
         const token = jwt.sign({ userId: 'dev-user' }, JWT_SECRET, { expiresIn: '1d' })
@@ -68,14 +66,12 @@ export async function loginController(req: Request, res: Response) {
     res.json({ token, user: { id: user._id, username: user.username, email: user.email } })
   } catch (error: any) {
     console.error('Error login controller:', error?.stack || error)
-    // ensure we always return a JSON body on error
     res.status(500).json({ error: 'Error al loguear', detail: error.message || 'Error desconocido' })
   }
 }
 
 export async function meController(req: Request, res: Response) {
   try {
-    // authMiddleware should provide req.userId
     const anyReq: any = req
     const userId = anyReq.userId
     if (!userId) return res.status(401).json({ error: 'No autenticado' })

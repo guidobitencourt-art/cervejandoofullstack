@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:api": "node scripts/dev-server.cjs",
-    "seed:users": "node scripts/seed-users.cjs",
-    "seed:admin": "node scripts/seed-admin.cjs",
+    "dev": "npm --prefix frontend run dev",
+    "dev:api": "npm --prefix backend run dev",
+    "seed:users": "npm --prefix backend run seed:users",
+    "seed:admin": "npm --prefix backend run seed:admin",
     "dev:all": "concurrently \"npm:dev:api\" \"npm:dev\"",
-    "build": "tsc -b && vite build",
+    "build": "npm --prefix frontend run build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -32,6 +32,9 @@
   "devDependencies": {
     "@eslint/js": "^9.39.1",
     "@types/cors": "^2.8.19",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/morgan": "^1.9.4",
     "@types/express": "^5.0.6",
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.7",

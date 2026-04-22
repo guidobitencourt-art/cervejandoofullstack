@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useCervezasRQ } from '../../hooks/useCervezasRQ'
 import { authFetch } from '../../utils/authFetch'
 

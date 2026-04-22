@@ -1,12 +1,11 @@
-import express, { Request, Response, NextFunction } from "express";
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import User from './models/User';
+import express from "express";
+import type { Request, Response, NextFunction } from 'express';
+// notas: algunos paquetes CJS no exponen default types sin esModuleInterop.
+import * as dotenv from 'dotenv';
+import * as cors from 'cors';
 import { authMiddleware } from './middleware/auth';
 import authRouter from './routes/auth'
 import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
 import helmet from 'helmet'
 import morgan from 'morgan'
 import Cerveza from './models/cerveza'

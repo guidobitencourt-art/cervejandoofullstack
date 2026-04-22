@@ -1,0 +1,33 @@
+{
+  "name": "cervejandofullstack-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-server.cjs",
+    "start": "node dist/index.js",
+    "seed:users": "node scripts/seed-users.cjs",
+    "seed:admin": "node scripts/seed-admin.cjs",
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "helmet": "^7.0.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^9.5.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "~5.9.3",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.12.2",
+    "@types/cors": "^2.8.19",
+    "@types/bcryptjs": "^2.4.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/morgan": "^1.9.4"
+  }
+}
