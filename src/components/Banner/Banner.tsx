@@ -3,6 +3,10 @@
 import { useEffect, useState, useRef } from 'react'
 import BannerImg from '../../assets/Banner.jpg'
 
+// Componente: Banner
+// Cabecera visual con imagen de gran tamaño y texto central. Incluye un efecto sutil
+// de movimiento del texto basado en la posición del ratón para dar profundidad.
+
 const Banner = () =>  {
     const [mouse, setMouse] = useState({ x: 0, y: 0 })
     const [mounted, setMounted] = useState(false)

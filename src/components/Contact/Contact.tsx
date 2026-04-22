@@ -1,8 +1,14 @@
 
 
+// Componente: Contact (reutilizado en la home y en la página de contacto)
+// - Contiene el mapa embebido (Google Maps) y el formulario de contacto.
+// - El formulario está separado visualmente en un bloque blanco y el botón de envío
+//   se coloca fuera del bloque principal para permitir diseño flexible.
+// - Se ha aplicado diseño responsive mediante utilidades de Tailwind.
+
 const Contact = () => {
   return (
-    <section className="w-full py-12">
+    <section className="w-full pt-12 pb-16">
       <div className="max-w-6xl mx-auto px-6 grid gap-8 md:grid-cols-2 items-start md:items-stretch">
 
         <div className="w-full order-1">

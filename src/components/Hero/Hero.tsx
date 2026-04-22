@@ -3,6 +3,10 @@
 import ImgEstilos from '../../assets/Estilos.webp'
 import { Link } from 'react-router-dom'
 
+// Componente: Hero
+// Sección destacada que introduce al usuario a los estilos de cerveza con un bloque
+// informativo y una imagen. Incluye un enlace para navegar a la página de Estilos.
+
 const Hero = () => {
     return (
         <section className="w-full py-12">

@@ -1,4 +1,8 @@
 
+// Página: Curiosidades
+// Contiene una colección de artículos/ tarjetas con curiosidades sobre cerveza.
+// Cada tarjeta incluye una imagen, título y texto explicativo. Las imágenes se obtienen
+// mediante `new URL(..., import.meta.url).href` para que Vite las empaquete correctamente.
 
 const ImgMonjes = new URL('../../assets/los monges.png', import.meta.url).href
 const ImgHistoria = new URL('../../assets/historia ipa.png', import.meta.url).href

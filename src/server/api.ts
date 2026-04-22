@@ -1,30 +1,57 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import User from './models/User';
+import { authMiddleware } from './middleware/auth';
+import authRouter from './routes/auth'
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from 'helmet'
+import morgan from 'morgan'
+import Cerveza from './models/cerveza'
+
+/*
+  Archivo: src/server/api.ts
+  Descripción (español):
+  - Este archivo define la API Express para la aplicación.
+  - Contiene: conexión opcional a MongoDB, modelos, rutas públicas (GET /api/cervezas)
+    y rutas protegidas para creación/actualización/eliminación de cervezas.
+  - También expone endpoints de autenticación (/api/auth/login y /api/auth/register).
+  - En modo desarrollo, si no hay MONGODB_URI configurado, algunas rutas usan datos de
+    ejemplo o permiten un login rápido (`dev` / `devpass`) para facilitar pruebas locales.
+*/
 
 // 1. Activamos las variables de entorno (nuestro archivo secreto)
 dotenv.config();
 
 // 2. Creamos la aplicación Express
 const app = express();
-app.use(cors()); // Permite peticiones desde el frontend
+app.use(helmet()) // Security headers
+app.use(cors()); // Permite peticiones desde el frontend (considerar restringir origin en producción)
 app.use(express.json()); // Permite que nuestra API entienda formato JSON
+app.use(morgan('combined')) // Logging HTTP requests
 
-// 3. Conexión a MongoDB
+// 3. Conexión a MongoDB (opcional en desarrollo)
 const mongoUri = process.env.MONGODB_URI;
+const isDevNoDB = !mongoUri && process.env.NODE_ENV !== 'production';
 
-if (!mongoUri) {
-  throw new Error("Falta la variable de entorno MONGODB_URI");
+if (isDevNoDB) {
+  // En desarrollo, si no hay MONGODB_URI, usamos un fallback de datos en memoria
+  // para evitar errores 500 y permitir revisar la UI sin DB.
+  console.warn('MONGODB_URI no definido — usando datos de ejemplo en modo desarrollo.');
 }
 
-const mongoUriValidated: string = mongoUri;
+const mongoUriValidated: string | undefined = mongoUri;
 
 let isMongoConnected = false;
-let currentDatabase = ""; // Valor por defecto, se actualizará al conectar
+let currentDatabase = ''; // Valor por defecto, se actualizará al conectar
 
 async function connectToMongo() {
   if (isMongoConnected) return;
+  if (!mongoUriValidated) {
+    throw new Error('MONGODB_URI no definido');
+  }
 
   // Si existe DB_NAME, forzamos ese nombre de base en la conexión.
   const dbNameFromEnv = process.env.DB_NAME;
@@ -34,52 +61,73 @@ async function connectToMongo() {
   currentDatabase = mongoose.connection.name;
 
   isMongoConnected = true;
-  console.log("¡Conectado a la Base de Datos!");
+  console.log('¡Conectado a la Base de Datos!');
 }
-
-// 4. Creamos el "Molde" (Esquema) para nuestras cervezas
-const CervezaSchema = new mongoose.Schema(
-  {
-    tipo: String,
-    descripcion: String,
-    temperatura_ideal: String,
-    copa: String,
-    abv: String,
-    ibu: String,
-    
-  },
-  {
-    collection: "cervezas",
-  },
-);
-const Cerveza = mongoose.models.Cerveza || mongoose.model("Cerveza", CervezaSchema);
 
 function getMongoDebugInfo() {
   return {
     database: currentDatabase || mongoose.connection.name,
-    collection: Cerveza.collection.name,
+    collection: Cerveza.collection ? Cerveza.collection.name : 'cervezas',
     readyState: mongoose.connection.readyState,
   };
 }
 
 // 5. RUTAS DE NUESTRA API
 
-app.get("/api/debug-db", async (req: Request, res: Response) => {
+app.get('/api/debug-db', async (req: Request, res: Response) => {
   try {
+    if (isDevNoDB) {
+      return res.json({
+        message: 'No hay MONGODB_URI configurado — modo dev con datos de ejemplo',
+        database: null,
+        collection: 'cervezas (mock)'
+      })
+    }
+
     await connectToMongo();
     res.json(getMongoDebugInfo());
   } catch (error) {
-    console.error("Error al inspeccionar MongoDB:", error);
+    console.error('Error al inspeccionar MongoDB:', error);
     res.status(500).json({
-      error: "No se pudo inspeccionar la conexion",
-      detail: error instanceof Error ? error.message : "Error desconocido",
+      error: 'No se pudo inspeccionar la conexion',
+      detail: error instanceof Error ? error.message : 'Error desconocido',
     });
   }
 });
 
+
 // Ruta GET: Sirve para LEER todas las cervezas
 app.get("/api/cervezas", async (req: Request, res: Response) => {
   try {
+    // Diagnostic logs to help debug 500 errors from the frontend
+    // eslint-disable-next-line no-console
+    console.log('GET /api/cervezas - isDevNoDB=', isDevNoDB, 'MONGODB_URI?', !!mongoUriValidated, 'mongooseReadyState=', mongoose.connection.readyState)
+    if (isDevNoDB) {
+      // Datos de ejemplo para desarrollo local cuando no hay DB
+      const ejemplo = [
+        {
+          _id: 'dev-1',
+          tipo: 'IPA',
+          descripcion: 'India Pale Ale: lúpulo marcado y amargor pronunciado.',
+          temperatura_ideal: '8-12°C',
+          copa: 'IPA glass',
+          abv: '6-7.5%',
+          ibu: '40-70',
+        },
+        {
+          _id: 'dev-2',
+          tipo: 'Lager',
+          descripcion: 'Lager clara y crujiente, refrescante y fácil de beber.',
+          temperatura_ideal: '4-7°C',
+          copa: 'Pinta',
+          abv: '4-5%',
+          ibu: '8-20',
+        },
+      ];
+      res.json(ejemplo);
+      return;
+    }
+
     await connectToMongo();
     const cervezas = await Cerveza.find(); // Busca todas las cervezas en MongoDB
     res.json(cervezas);
@@ -92,8 +140,14 @@ app.get("/api/cervezas", async (req: Request, res: Response) => {
   }
 });
 
-// Ruta POST: Sirve para CREAR una nueva cerveza
-app.post("/api/cervezas", async (req: Request, res: Response) => {
+// Rutas de autenticación (registro / login)
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+
+// Mount auth router
+app.use('/api/auth', authRouter)
+
+// Ruta POST: Sirve para CREAR una nueva cerveza (PROTEGIDA)
+app.post("/api/cervezas", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { tipo, descripcion, temperatura_ideal, copa, abv, ibu } = req.body;
 
@@ -116,7 +170,7 @@ app.post("/api/cervezas", async (req: Request, res: Response) => {
 });
 
 // Ruta PUT: Sirve para ACTUALIZAR una cerveza existente
-app.put("/api/cervezas/:id", async (req: Request, res: Response) => {
+app.put("/api/cervezas/:id", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const {tipo, descripcion, temperatura_ideal, copa, abv, ibu } = req.body;
@@ -145,7 +199,7 @@ app.put("/api/cervezas/:id", async (req: Request, res: Response) => {
 });
 
 // Ruta DELETE: Sirve para ELIMINAR una cerveza
-app.delete("/api/cervezas/:id", async (req: Request, res: Response) => {
+app.delete("/api/cervezas/:id", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -167,6 +221,18 @@ app.delete("/api/cervezas/:id", async (req: Request, res: Response) => {
     });
   }
 });
+
+// 404 handler (must be after routes)
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' })
+})
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error:', err)
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' })
+})
 
 // 6. Exportamos la app para que Vercel pueda encenderla
 export default app;
