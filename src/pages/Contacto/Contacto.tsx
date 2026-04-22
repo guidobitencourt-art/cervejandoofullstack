@@ -1,4 +1,9 @@
-
+// Página: Contacto
+// Esta página muestra un mapa (Google Maps embebido) y un formulario de contacto.
+// - El iframe contiene la localización embebida.
+// - El formulario recoge nombre, apellidos, email y mensaje.
+// - El botón de envío está localizado fuera del contenedor del formulario pero usa el atributo `form`.
+// - El diseño es responsivo: en pantallas pequeñas el mapa y el formulario se apilan; en pantallas grandes van lado a lado.
 
 const Contacto = () => {
     return (

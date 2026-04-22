@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from './models/User';
@@ -6,14 +6,30 @@ import { authMiddleware } from './middleware/auth';
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
+import helmet from 'helmet'
+import morgan from 'morgan'
+import Cerveza from './models/cerveza'
+
+/*
+  Archivo: src/server/api.ts
+  Descripción (español):
+  - Este archivo define la API Express para la aplicación.
+  - Contiene: conexión opcional a MongoDB, modelos, rutas públicas (GET /api/cervezas)
+    y rutas protegidas para creación/actualización/eliminación de cervezas.
+  - También expone endpoints de autenticación (/api/auth/login y /api/auth/register).
+  - En modo desarrollo, si no hay MONGODB_URI configurado, algunas rutas usan datos de
+    ejemplo o permiten un login rápido (`dev` / `devpass`) para facilitar pruebas locales.
+*/
 
 // 1. Activamos las variables de entorno (nuestro archivo secreto)
 dotenv.config();
 
 // 2. Creamos la aplicación Express
 const app = express();
-app.use(cors()); // Permite peticiones desde el frontend
+app.use(helmet()) // Security headers
+app.use(cors()); // Permite peticiones desde el frontend (considerar restringir origin en producción)
 app.use(express.json()); // Permite que nuestra API entienda formato JSON
+app.use(morgan('combined')) // Logging HTTP requests
 
 // 3. Conexión a MongoDB (opcional en desarrollo)
 const mongoUri = process.env.MONGODB_URI;
@@ -47,27 +63,10 @@ async function connectToMongo() {
   console.log('¡Conectado a la Base de Datos!');
 }
 
-// 4. Creamos el "Molde" (Esquema) para nuestras cervezas
-const CervezaSchema = new mongoose.Schema(
-  {
-    tipo: String,
-    descripcion: String,
-    temperatura_ideal: String,
-    copa: String,
-    abv: String,
-    ibu: String,
-    
-  },
-  {
-    collection: "cervezas",
-  },
-);
-const Cerveza = mongoose.models.Cerveza || mongoose.model("Cerveza", CervezaSchema);
-
 function getMongoDebugInfo() {
   return {
     database: currentDatabase || mongoose.connection.name,
-    collection: Cerveza.collection.name,
+    collection: Cerveza.collection ? Cerveza.collection.name : 'cervezas',
     readyState: mongoose.connection.readyState,
   };
 }
@@ -94,6 +93,18 @@ app.get('/api/debug-db', async (req: Request, res: Response) => {
     });
   }
 });
+
+// 404 handler (must be after routes)
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' })
+})
+
+// Error handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  // eslint-disable-next-line no-console
+  console.error('Unhandled error:', err)
+  res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' })
+})
 
 // Ruta GET: Sirve para LEER todas las cervezas
 app.get("/api/cervezas", async (req: Request, res: Response) => {

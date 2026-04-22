@@ -1,3 +1,6 @@
+// Utilidad: authFetch
+// - Envuelve fetch para inyectar el header `Authorization: Bearer <token>` si existe en localStorage.
+// - Normaliza errores devolviendo un objeto Error con detalles cuando la petición falla.
 export async function authFetch(input: RequestInfo, init: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const headers = new Headers(init.headers || {});

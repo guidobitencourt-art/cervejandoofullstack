@@ -4,6 +4,10 @@ import ImgMonjes from '../../assets/los monges.png'
 import ImgHistoria from '../../assets/historia ipa.png'
 import { Link } from 'react-router-dom'
 
+// Componente: Hero2
+// Segundo bloque destacado con dos tarjetas de contenido que dirigen a la sección
+// de Curiosidades. Diseñado para llamar la atención y ofrecer enlaces rápidos.
+
 const Hero2 = () => {
     return (
         <section className="w-full py-12">

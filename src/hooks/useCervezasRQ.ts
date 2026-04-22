@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 
+// Hook: useCervezasRQ
+// Hook que encapsula la llamada a la API `/api/cervezas` usando React Query.
+// Provee la lista de cervezas y estados de carga/ error reutilizables en la UI.
 export type Cerveza = {
   _id?: string
   tipo: string

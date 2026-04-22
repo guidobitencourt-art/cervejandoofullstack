@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+// Página: Login
+// Formulario simple de autenticación.
+// - Envía `identifier` (usuario o email) y `password` a `/api/auth/login`.
+// - Si la respuesta es exitosa guarda el JWT en `localStorage` y redirige al inicio.
+// - En modo desarrollo, el backend acepta credenciales de prueba (`dev` / `devpass`) si no hay DB.
+
 const Login = () => {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')

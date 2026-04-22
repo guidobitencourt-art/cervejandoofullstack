@@ -2,6 +2,14 @@ import React, { useState } from 'react'
 import { useCervezasRQ } from '../../hooks/useCervezasRQ'
 import { authFetch } from '../../utils/authFetch'
 
+// Página: Estilos
+// Esta página implementa las operaciones CRUD visibles para el usuario:
+// - Leer: la lista de estilos se obtiene con `useCervezasRQ()` (React Query) desde `/api/cervezas`.
+// - Crear: cuando el usuario está autenticado se muestra un formulario para crear una cerveza (POST).
+// - Actualizar: al pulsar 'Editar' aparece un formulario inline que realiza PUT a `/api/cervezas/:id`.
+// - Eliminar: el botón 'Eliminar' llama a DELETE `/api/cervezas/:id`.
+// Notas: las operaciones de escritura usan `authFetch` que incluye el token JWT almacenado en localStorage.
+
 const EstilosPage = () => {
   const { data: cervezas, isLoading, error, refetch } = useCervezasRQ()
   const [showForm, setShowForm] = useState(false)

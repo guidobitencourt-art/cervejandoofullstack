@@ -1,5 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+
+// Componente: Header
+// Barra de navegación superior que incluye el logo y enlaces a las rutas principales.
+// - En pantallas pequeñas muestra un botón "hamburger" que despliega el menú.
+// - Si el usuario está autenticado (token en localStorage) muestra un botón para cerrar sesión.
 import Logo from '../../assets/Logo.png'
 
 const Header = () => {
